@@ -14,6 +14,7 @@ var model = new THREE.Mesh(new THREE.BoxGeometry(1,2,1), new THREE.MeshStandardM
 model.geometry.computeBoundingBox();
 playermodel.add(model);
 console.log(`loaded config ${JSON.stringify(serverConfig)}`);
+console.log(`loaded maps ${JSON.stringify(maps)}`);
 const PORT = (serverConfig)? serverConfig.port : "5000";
 const IP = (serverConfig)? serverConfig.ip : "localhost";
 
@@ -941,18 +942,18 @@ class ShooterGameLobby{
     var player = this.players.get(playerId)
     player.connected = false;
     setTimeout(()=>{
-      console.log(this.players.get(playerId));
+      //console.log(this.players.get(playerId));
       if(this.players.get(playerId) && !this.players.get(playerId).connected){
         console.log("player not connected anymore, deleting");
         let wasOwner = this.players.get(playerId).isOwner;
         this.players.delete(playerId);
         if(wasOwner){
-          console.log("New owner or destroy lobby");
+          //console.log("New owner or destroy lobby");
           if(this.players.size==0){
-            console.log("destroy lobby");
+            //console.log("destroy lobby");
             lobbies.delete(this.id);
           }else{
-            console.log("change owner");
+            //console.log("change owner");
             this.players.get(Array.from(this.players.keys())[0]).isOwner = true;
           }
         }
@@ -1181,7 +1182,7 @@ class ShooterGame{
     }
     //every 5 seconds
     if(debugDelta>5 || this.goalReached){
-      console.log(this.players);
+      //console.log(this.players);
       //leaving
       if(this.allDead || this.goalReached || !Array.from(this.players.values()).some(val => val.connected == true)){
         this.leaveRetry--;
@@ -1263,8 +1264,8 @@ var lobbies = new Map();
 SocketServer.on('connection', (socket) => {
   console.log('a user connected');
   //console.log(socket);
-  console.log(socket.handshake.query);
-  console.log(socket.handshake.query.gameId);
+  //console.log(socket.handshake.query);
+  console.log(socket.handshake.query.lobbyId);
   console.log(socket.data.playerId);
   socket.on("disconnect", (reason) => {
    console.log("DISCONNECTED");
@@ -1357,13 +1358,13 @@ SocketServer.on('connection', (socket) => {
     callback();
   });
   socket.on("requestData", (data, callback)=>{
-    console.log("reqda");
+    console.log("reqdata");
     //console.log(data);
     var mapData = {};
-    console.log(socket.handshake.query.lobbyId);
-    console.log(games);
+    //console.log(socket.handshake.query.lobbyId);
+    //console.log(games);
     var game = games.get(socket.handshake.query.lobbyId);
-    console.log(game);
+    //console.log(game);
     mapData.map = game.map.data;
     mapData.map.type = game.type;
     mapData.players = Array.from(game.players.values()).map(val => {
@@ -1380,20 +1381,20 @@ SocketServer.on('connection', (socket) => {
   });
   socket.on("startGame", (data)=>{
     console.log("starting game");
-    console.log(data);
+    //console.log(data);
     try {
       var map = JSON.parse(readFileSync('./maps/'+data.map, {encoding:'ascii'}));
       games.set(socket.handshake.query.lobbyId, new ShooterGame(socket.handshake.query.lobbyId, {data:map}));
       var playerLobby = lobbies.get(socket.handshake.query.lobbyId);
       //new Player(p.id, p.nickname, model, p.color, p.image, spawnPoint, this);
       var players = Array.from(playerLobby.players.values()).map(p=>{
-          console.log(120+p.hueShift);
-          console.log("hsl("+(120+p.hueShift)+"deg 100% 23.77%)");
-          console.log((((120+p.hueShift)%360)/360), 1, 2377/10000);
+          //console.log(120+p.hueShift);
+          //console.log("hsl("+(120+p.hueShift)+"deg 100% 23.77%)");
+          //console.log((((120+p.hueShift)%360)/360), 1, 2377/10000);
           let c = new THREE.Color();
           c.setHSL( (((120+p.hueShift)%360)/360), 1, 2377/10000);
-          console.log(c);
-          console.log(c.getHex());
+          //console.log(c);
+          //console.log(c.getHex());
           return {
           id:p.id,
           nickname:p.name,
@@ -1460,8 +1461,8 @@ SocketServer.on('connection', (socket) => {
   */
   socket.on("joinLobby", (data, callback)=>{
     console.log("joining");
-    console.log(socket.handshake.query);
-    console.log(socket);
+    //console.log(socket.handshake.query);
+    //console.log(socket);
     var lobby = undefined;
     let lobbyId = socket.handshake.query.lobbyId;
     let playerId = data.player.id;
@@ -1474,12 +1475,12 @@ SocketServer.on('connection', (socket) => {
         lobby = lobbies.get(lobbyId);
         var player = lobby.playerJoin(playerId, playerName, hueShift);
         socket.data.playerId = player.id;
-        console.log(socket.data);
+        //console.log(socket.data);
         // playerId = player.id;
         // playerName = player.name;
         // hueShift = player.hueShift;
         // isOwner = player.isOwner;
-        console.log(lobby);
+        //console.log(lobby);
 
         games.has(lobbyId)
         callback({error:false,message:"Connected", lobbyId:lobby.id, player:player, started:games.has(lobbyId)})
@@ -1493,7 +1494,7 @@ SocketServer.on('connection', (socket) => {
     }
   });
   socket.on("test", ()=>{
-    console.log(socket.data);
+    //console.log(socket.data);
   });
   socket.on("createLobby", (callback)=>{
     var lobby = new ShooterGameLobby();
@@ -1502,7 +1503,7 @@ SocketServer.on('connection', (socket) => {
     // playerName = player.name;
     // hueShift = player.hueShift;
     // isOwner = player.isOwner;
-    console.log(socket.handshake.query);
+    //console.log(socket.handshake.query);
     callback({error:false,message:"Connected", lobbyId:lobby.id})
   });
 });
